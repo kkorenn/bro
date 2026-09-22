@@ -1,0 +1,196 @@
+assets/icons/ellipsis-vertical.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-15
+assets/icons/x.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-14
+assets/icons/wrench.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-13
+assets/icons/download.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-15
+assets/icons/chevron-right.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-13
+assets/icons/panel-left.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-14
+assets/icons/puzzle.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-13
+assets/icons/venetian-mask.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-15
+assets/icons/info.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-15
+assets/icons/check.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-13
+assets/icons/maximize.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-16
+assets/icons/square-plus.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-15
+assets/icons/minus.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-13
+assets/icons/paintbrush.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-15
+assets/icons/rotate-cw.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-14
+assets/icons/settings.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-14
+assets/icons/layout-grid.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-16
+assets/icons/trash.svg
+  s_f2916e9e348b53::t_703b93e9f1fd87 1-17
+assets/icons/chevron-left.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-13
+assets/icons/zoom-in.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-16
+src/main.rs
+  s_1300bb99b7faba::t_c12f6eb951dbd2 595,1348
+  s_9ae4823d724317::t_87ff594cd51677 828-831,834-836
+  s_1300bb99b7faba::t_6ce96f7ad50a9c 891-939,943-945,950,952,957-958,962,964-967,975-980,989-990,1002-1008,1012,1016,1019,1024,1030-1031,1039-1040,1048-1055,1057-1061,1068,1072,1092-1094,1097-1098,1100,1103,1106-1112,1135,1146,1149-1156,1161,1175,1178,1183-1184,1186-1188,1190,1196-1197,1200,1202-1203,1208,1211,1218-1222,1228-1230,1232-1237,1250-1252,1258-1261,1263-1266,1268-1269,1275-1281,1301-1304,1307-1308,1311,1344-1345,1347,1351
+  s_f2916e9e348b53::t_380ea99622f2b2 1168,1170
+  s_1dc46a60d8d2b0::t_72b616c476cf65 24,951,953-955,982-985,988,991,993-1000,1010-1011,1017-1018,1020-1023,1025-1029,1032,1423-1425,1427
+  s_9ae4823d724317::t_a5697c7fd4e1e4 7,652,809,949
+  s_9ae4823d724317::t_f0cab2112c28f2 1360-1370,1372-1392,1394,1396,1433,1451
+  s_a11e500ffaabd5::t_6bca9627717786 555,606,1309,1312-1316
+  s_3a33adad0ea128::t_23454eae0954d5 987,992
+  s_9ae4823d724317::t_0cac9f7c99ad6a 26-27,30-38,149-154,165-166,178-179,195,199-203,206-223,226-237,245-249,254-255,284-287,289-291,306-312,314-322,324-326,329,460,473-512,529-550,571-579,615,618-619,622-627,634-638,659,671,728-747,760-777,806-808,812,815-816,818,823-827,850,869,884,956,959-961,968-974,981,1036-1037,1047,1095-1096,1099,1101-1102,1104-1105,1113-1116,1137,1139-1140,1145,1148,1157-1160,1162-1167,1169,1171-1174,1176-1177,1179-1182,1185,1189,1191-1193,1195,1198-1199,1201,1204-1205,1209-1210,1212-1217,1223-1224,1226-1227,1238,1240-1241,1247-1249,1253-1257,1270,1272-1273,1283,1285-1295,1298-1299,1310,1371,1393,1395,1397-1422
+  s_1300bb99b7faba::t_b1d5f29e938a4e 1434-1450
+  s_a11e500ffaabd5::t_41b5c96f92329f 25,56-67,557-558,614,1080,1082-1084
+  s_1300bb99b7faba::t_ca5e88e4491d50 4-6,238-244,258-269,293-300,323,327-328,330-331,387-403,405-416,418-433,436,438-459,461-472,580-581,596,598,600-602,604-605,616,793-794,833
+  s_1dc46a60d8d2b0::t_5b4800e34a0307 251-252,288,404,417,569,963,1001,1071,1426,1428-1432
+  s_f2916e9e348b53::t_df6876ca9ca021 8,513-528,986,1009,1013-1015,1067,1069-1070,1073,1194,1206-1207,1231,1242-1246,1262,1274,1282,1284,1300,1305-1306,1317-1337,1341
+  s_9ae4823d724317::t_39b4aa636b5962 795-805,810
+  s_a11e500ffaabd5::t_9ec040ce7ac309 75
+  s_9ae4823d724317::t_2a7bd3c6d06d65 3,277-279,305,358-365,376,590-591,597,599,716,718,720-724
+  s_9ae4823d724317::t_f5ab72d906c1ff 434-435,437
+  s_a11e500ffaabd5::t_266ac1ae87d006 69-74,76-137
+  s_9ae4823d724317::t_c3764bbebe093b 748-759
+  s_a11e500ffaabd5::t_fcc7d4aeb04328 256-257,292,556,607-613,1085-1089
+  s_9ae4823d724317::t_e3d772006a7563 332-357,366-375,377-386
+  s_1300bb99b7faba::t_212fd3c1edcb45 1338-1340
+  s_9ae4823d724317::t_e4e859899e1e23 1038
+  s_a11e500ffaabd5::t_37252b7cce143d 1078-1079,1081
+  s_9ae4823d724317::t_6f13846b2ac356 270-276
+  s_9ae4823d724317::t_aeb014d1a19dd7 561,817
+  s_9ae4823d724317::t_83e07fb7b5ad11 9-14
+  s_9ae4823d724317::t_2dde0afd0ea1a4 1-2,15-23,28-29,39-40,53-55,68,138-139,148,155-164,167-177,180-194,196-198,204-205,224-225,250,253,280-283,313,551-554,559-560,562-568,570,592-594,603,617,620-621,628-629,633,639,643,651,653,660-665,672-674,725-727,778-792,811,813-814,819-822,832,837-849,851-868,870-883,885-890,940-942,946-948,1033-1035,1041-1046,1056,1062-1064,1074-1077,1090-1091,1143,1147,1225,1267,1296-1297,1342-1343,1346,1349-1350,1352-1359
+  s_9ae4823d724317::t_666e2bad83902c 630-632,640-642,644-650,654-658,666-670,675-715,717,719
+  s_9ae4823d724317::t_a74caa1904daf2 41-52
+  s_9ae4823d724317::t_a2bcd0bf2639a5 1117-1134,1136,1138,1141-1142,1144
+  s_f2916e9e348b53::t_50ba669ee8a833 140-147,1239,1271
+  s_9ae4823d724317::t_d8fbf5803c00de 1065-1066
+  s_9ae4823d724317::t_87c9ed34f87c7d 301-304
+  s_9ae4823d724317::t_29da3d8ade4760 582-589
+  s_9ae4823d724317::t_ebe69fa112088f 1452-1454
+src/engine.rs
+  s_9ae4823d724317::t_858e241247c894 30,114,122-124,127,129-133,142-146
+  s_9ae4823d724317::t_6cc39b9d101876 1-29,31-95,99-113,115-121,125-126,128,134-141,147-177,179,189-206,210-211,213-219,225-227,230-273,280-339
+  s_9ae4823d724317::t_b9190873f84fde 182-184,220-223,274-279
+  s_9ae4823d724317::t_2a7bd3c6d06d65 96-98,178,180-181,185-188,207-209,212,224,228-229
+  s_3dfc2e4f1d8c5b::t_d36440b0a8eb57 340-354
+assets/icons/LICENSE
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-43
+assets/icons/plus.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-14
+assets/icons/search.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-14
+assets/icons/printer.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-15
+assets/icons/clock-arrow-left.svg
+  s_f2916e9e348b53::t_703b93e9f1fd87 1-16
+assets/icons/star.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-13
+Cargo.toml
+  s_9ae4823d724317::t_4f5982a3317979 7
+  s_f2916e9e348b53::t_50ba669ee8a833 2,8,15,19-23
+  s_9ae4823d724317::t_de500cda4123ca 24-36
+  s_9ae4823d724317::t_3d0fdd9885e4b0 9-14
+  s_a11e500ffaabd5::t_266ac1ae87d006 16-18
+  s_7070769234772f::t_aaa664edaac01b 1,3-6
+assets/icons/app-window.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-16
+PLAN.md
+  s_1dc46a60d8d2b0::t_1e5b15a2440a66 28,32,38
+  s_9ae4823d724317::t_449e6b42837b8a 42-47
+  s_9ae4823d724317::t_425f714fc9a4a5 52-60
+  s_9ae4823d724317::t_c6873bcfd6e9cd 33-35,37,41,48-49
+  s_1dc46a60d8d2b0::t_7a320b851eba72 36
+  s_9ae4823d724317::t_de500cda4123ca 1-27,29-31,40,50-51,61-75
+  s_1dc46a60d8d2b0::t_72b616c476cf65 39
+  s_3dfc2e4f1d8c5b::t_c6ed753506c310 76-80
+assets/icons/share.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-15
+assets/icons/sun-moon.svg
+  s_f2916e9e348b53::t_f1cfc61a698a11 1-17
+.gitignore
+  s_9ae4823d724317::t_43fc9fbcf152b9 1
+Cargo.lock
+  s_7070769234772f::t_5159486d1bbcb8 1-11663
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "2eaf8aa956a283016d23a903da1e1463b539febb",
+  "prompts": {},
+  "sessions": {
+    "s_1300bb99b7faba": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "77b721f5-2c45-4612-b1b0-4902491dbc64",
+        "model": "claude-opus-5"
+      },
+      "human_author": "koren <131921956+kkorenn@users.noreply.github.com>"
+    },
+    "s_1dc46a60d8d2b0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bbf679b4-3f03-4d31-82d5-20adbabc132f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "koren <131921956+kkorenn@users.noreply.github.com>"
+    },
+    "s_3a33adad0ea128": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b553f0a8-9112-4b42-a199-ede215c984d4",
+        "model": "claude-opus-5"
+      },
+      "human_author": "koren <131921956+kkorenn@users.noreply.github.com>"
+    },
+    "s_3dfc2e4f1d8c5b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c6e4d521-c433-4f5c-8bdd-f1834376f0b5",
+        "model": "unknown"
+      },
+      "human_author": "koren <131921956+kkorenn@users.noreply.github.com>"
+    },
+    "s_7070769234772f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d6b93c6e-0386-4e94-a317-26c0ce28f251",
+        "model": "claude-opus-5"
+      },
+      "human_author": "koren <131921956+kkorenn@users.noreply.github.com>"
+    },
+    "s_9ae4823d724317": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0b3b0db0-91fb-4751-9689-fbf8e17911dc",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "koren <131921956+kkorenn@users.noreply.github.com>"
+    },
+    "s_a11e500ffaabd5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4deb71ed-1cba-4571-a3c5-1d07f28132d2",
+        "model": "claude-opus-5"
+      },
+      "human_author": "koren <131921956+kkorenn@users.noreply.github.com>"
+    },
+    "s_f2916e9e348b53": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c016d8bf-6259-484c-bb90-a8270c55233a",
+        "model": "claude-opus-5"
+      },
+      "human_author": "koren <131921956+kkorenn@users.noreply.github.com>"
+    }
+  }
+}
