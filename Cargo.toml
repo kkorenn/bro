@@ -1,0 +1,36 @@
+[package]
+name = "bro"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+iced = { version = "0.14", features = ["wgpu", "svg", "image", "advanced"] }
+png = "0.17" # already in the tree via iced; decodes the window icon
+# engine — our Servo fork, vendored in ./servo (branch `bro`, forked from upstream c6b9877a)
+servo = { path = "servo/components/servo", default-features = false, features = ["bundled", "clipboard", "js_jit", "webgl", "webcrypto"] }
+rustls = "0.23" # servo needs a crypto provider installed at startup
+url = "2"
+euclid = "0.22"
+dpi = "0.1"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6" # already in the tree via winit; patches the titlebar hit-testing
+
+# macOS dock icon comes from the .app bundle (`cargo bundle --release`); winit ignores window icons there.
+[package.metadata.bundle]
+name = "bro"
+identifier = "dev.bro.browser"
+icon = ["assets/icon.icns", "assets/icon.png"]
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
