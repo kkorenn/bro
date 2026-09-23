@@ -1,0 +1,45 @@
+tools/readback-bench.rs
+  s_3dfc2e4f1d8c5b::t_c8b576c6aa2c1d 1-40
+Cargo.lock
+  s_69880e292eb3cc::t_b281d60bd879f2 557,800,1026-1035,2758-2770,2797-2839,2905-2915,2978-3282,4657-4665,5237-5242,6001-6009,6159-6164,7567,7593,8235-8300,9724-9736,9760-9765,10606-10611
+Cargo.toml
+  s_69880e292eb3cc::t_6fe966ada79184 10,12,38-40
+PERFORMANCE.md
+  s_b0b37bcdfa9259::t_6bd04299036fe8 1-52
+PLAN.md
+  s_b0b37bcdfa9259::t_c61f17e6d4a532 5-6
+tools/video/smoke.js
+  s_69880e292eb3cc::t_4f5e2c1ac6777a 1-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "fdff61595c7335d8225f575f17cb0b6d37d61b4d",
+  "prompts": {},
+  "sessions": {
+    "s_3dfc2e4f1d8c5b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c6e4d521-c433-4f5c-8bdd-f1834376f0b5",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "koren <131921956+kkorenn@users.noreply.github.com>"
+    },
+    "s_69880e292eb3cc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0cb33-7708-7a93-9cdd-bc24cf130eb1",
+        "model": "unknown"
+      },
+      "human_author": "koren <131921956+kkorenn@users.noreply.github.com>"
+    },
+    "s_b0b37bcdfa9259": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c932-d41c-7f30-bd2d-6b3536930db4",
+        "model": "unknown"
+      },
+      "human_author": "koren <131921956+kkorenn@users.noreply.github.com>"
+    }
+  }
+}
