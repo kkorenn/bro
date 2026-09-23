@@ -7,6 +7,7 @@
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Mutex, OnceLock};
 
 use dpi::PhysicalSize;
@@ -26,8 +27,11 @@ use url::Url;
 #[derive(Debug)]
 pub enum Update {
     Url(Url),
+    History(Vec<Url>, usize),
     Title(Option<String>),
-    Load(#[allow(dead_code)] LoadStatus),
+    Load(LoadStatus),
+    Error(String),
+    Fullscreen(bool),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -51,6 +55,9 @@ impl WebViewDelegate for Shared {
     fn notify_url_changed(&self, w: WebView, url: Url) {
         self.updates.borrow_mut().push((w.id(), Update::Url(url)));
     }
+    fn notify_history_changed(&self, w: WebView, entries: Vec<Url>, current: usize) {
+        self.updates.borrow_mut().push((w.id(), Update::History(entries, current)));
+    }
     fn notify_page_title_changed(&self, w: WebView, title: Option<String>) {
         self.updates.borrow_mut().push((w.id(), Update::Title(title)));
     }
@@ -60,8 +67,11 @@ impl WebViewDelegate for Shared {
     fn show_console_message(&self, _w: WebView, level: servo::ConsoleLogLevel, message: String) {
         eprintln!("[console {level:?}] {message}");
     }
-    fn notify_crashed(&self, _w: WebView, reason: String, _bt: Option<String>) {
-        eprintln!("[crashed] {reason}");
+    fn notify_fullscreen_state_changed(&self, w: WebView, fullscreen: bool) {
+        self.updates.borrow_mut().push((w.id(), Update::Fullscreen(fullscreen)));
+    }
+    fn notify_crashed(&self, w: WebView, reason: String, _bt: Option<String>) {
+        self.updates.borrow_mut().push((w.id(), Update::Error(reason)));
     }
 }
 
@@ -77,6 +87,8 @@ fn wake_channel() -> &'static Wake {
     })
 }
 
+static WAKE_PENDING: AtomicBool = AtomicBool::new(false);
+
 struct Waker;
 
 impl EventLoopWaker for Waker {
@@ -84,7 +96,9 @@ impl EventLoopWaker for Waker {
         Box::new(Waker)
     }
     fn wake(&self) {
-        let _ = wake_channel().0.unbounded_send(());
+        if !WAKE_PENDING.swap(true, Ordering::AcqRel) {
+            let _ = wake_channel().0.unbounded_send(());
+        }
     }
 }
 
@@ -102,15 +116,22 @@ struct View {
     /// Last frame the shell allocated on the GPU. Held until the next one lands, so the widget never
     /// draws a handle that is still uploading (that gap is the gray flicker).
     frame: Option<image::Allocation>,
+    uploading: bool,
+    upload_failures: u8,
 }
+
+/// `BRO_TRACE`: JS evaluated in the active page every couple of seconds; prints `<video>` state.
+const PROBE_JS: &str = r#"(()=>{const v=document.querySelector('video');if(!v)return 'no <video>';const r=[];for(let i=0;i<v.buffered.length;i++)r.push(v.buffered.start(i).toFixed(2)+'-'+v.buffered.end(i).toFixed(2));return JSON.stringify({rs:v.readyState,ns:v.networkState,t:+v.currentTime.toFixed(2),dur:v.duration,paused:v.paused,seeking:v.seeking,rate:v.playbackRate,ended:v.ended,err:v.error&&v.error.code,src:(v.currentSrc||'').slice(0,30),buf:r,w:v.videoWidth,h:v.videoHeight});})()"#;
 
 pub struct Engine {
     servo: Servo,
+    last_probe: std::time::Instant,
     shared: Rc<Shared>,
     views: HashMap<usize, View>,
     by_id: HashMap<WebViewId, usize>,
     size: PhysicalSize<u32>,
     scale: f32,
+    active: Option<usize>,
 }
 
 impl Engine {
@@ -127,7 +148,16 @@ impl Engine {
         };
         let servo = ServoBuilder::default().preferences(prefs).event_loop_waker(Box::new(Waker)).build();
         servo.setup_logging(); // honours RUST_LOG
-        Self { servo, shared: Rc::default(), views: HashMap::new(), by_id: HashMap::new(), size: clamp(size), scale }
+        Self {
+            servo,
+            last_probe: std::time::Instant::now(),
+            shared: Rc::default(),
+            views: HashMap::new(),
+            by_id: HashMap::new(),
+            size: clamp(size),
+            scale,
+            active: None,
+        }
     }
 
     pub fn has(&self, tab: usize) -> bool {
@@ -146,9 +176,9 @@ impl Engine {
                 builder = builder.url(u);
             }
             let webview = builder.build();
-            webview.focus();
+            webview.hide();
             self.by_id.insert(webview.id(), tab);
-            self.views.insert(tab, View { webview, ctx, frame: None });
+            self.views.insert(tab, View { webview, ctx, frame: None, uploading: false, upload_failures: 0 });
         }
         self.views.get_mut(&tab).unwrap()
     }
@@ -163,8 +193,32 @@ impl Engine {
     pub fn close(&mut self, tab: usize) {
         if let Some(v) = self.views.remove(&tab) {
             self.by_id.remove(&v.webview.id());
+            self.shared.dirty.borrow_mut().remove(&v.webview.id());
+            if self.active == Some(tab) {
+                self.active = None;
+            }
         }
     }
+    /// Only the selected tab needs compositing and CPU readback.
+    pub fn activate(&mut self, tab: Option<usize>) {
+        if self.active == tab {
+            return;
+        }
+        if let Some(v) = self.active.and_then(|id| self.views.get(&id)) {
+            v.webview.exit_fullscreen();
+            v.webview.blur();
+            v.webview.hide();
+        }
+        self.active = tab;
+        if let Some(v) = tab.and_then(|id| self.views.get(&id)) {
+            v.webview.resize(self.size);
+            v.webview.set_hidpi_scale_factor(Scale::new(self.scale));
+            v.webview.show();
+            v.webview.focus();
+            self.shared.dirty.borrow_mut().insert(v.webview.id());
+        }
+    }
+
     pub fn back(&self, tab: usize) {
         if let Some(v) = self.views.get(&tab) {
             v.webview.go_back(1);
@@ -174,6 +228,9 @@ impl Engine {
         if let Some(v) = self.views.get(&tab) {
             v.webview.go_forward(1);
         }
+    }
+    pub fn exit_fullscreen(&self, tab: usize) {
+        if let Some(v) = self.views.get(&tab) { v.webview.exit_fullscreen(); }
     }
     pub fn reload(&self, tab: usize) {
         if let Some(v) = self.views.get(&tab) {
@@ -193,12 +250,26 @@ impl Engine {
         self.views.get(&tab).and_then(|v| v.frame.as_ref()).map(|a| a.handle().clone())
     }
     /// The shell finished uploading a frame from [`Engine::tick`].
-    pub fn set_frame(&mut self, tab: usize, frame: image::Allocation) {
+    pub fn set_frame(&mut self, tab: usize, id: WebViewId, frame: Option<image::Allocation>) {
         if trace() {
-            eprintln!("[trace] gpu tab={tab} {:?}", frame.size());
+            eprintln!("[trace] gpu tab={tab} success={}", frame.is_some());
         }
-        if let Some(v) = self.views.get_mut(&tab) {
-            v.frame = Some(frame);
+        if let Some(v) = self.views.get_mut(&tab).filter(|v| v.webview.id() == id) {
+            v.uploading = false;
+            if let Some(frame) = frame {
+                v.frame = Some(frame);
+                v.upload_failures = 0;
+            } else {
+                v.upload_failures = v.upload_failures.saturating_add(1);
+                if v.upload_failures < 3 {
+                    self.shared.dirty.borrow_mut().insert(id);
+                } else {
+                    self.shared
+                        .updates
+                        .borrow_mut()
+                        .push((id, Update::Error("Could not upload the page image. Try reloading the page.".into())));
+                }
+            }
         }
     }
 
@@ -211,7 +282,7 @@ impl Engine {
         let rescale = scale != self.scale;
         self.size = size;
         self.scale = scale;
-        for v in self.views.values() {
+        if let Some(v) = self.active.and_then(|id| self.views.get(&id)) {
             v.webview.resize(size);
             if rescale {
                 v.webview.set_hidpi_scale_factor(Scale::new(scale));
@@ -221,9 +292,30 @@ impl Engine {
 
     /// Spin Servo, repaint dirty views. Returns shell-visible updates and freshly painted frames;
     /// the shell must GPU-allocate each frame and hand it back through [`Engine::set_frame`].
-    pub fn tick(&mut self) -> (Vec<(usize, Update)>, Vec<(usize, image::Handle)>) {
+    pub fn tick(&mut self) -> (Vec<(usize, Update)>, Vec<(usize, WebViewId, image::Handle)>) {
         self.servo.spin_event_loop();
-        let dirty: Vec<WebViewId> = self.shared.dirty.borrow_mut().drain().collect();
+        if (trace() || video_smoke()) && self.last_probe.elapsed().as_secs() >= 2 {
+            self.last_probe = std::time::Instant::now();
+            for (tab, v) in &self.views {
+                let tab = *tab;
+                #[cfg(debug_assertions)]
+                if video_smoke() {
+                    v.webview.evaluate_javascript(include_str!("../tools/video/smoke.js"), |_| {});
+                }
+                v.webview.evaluate_javascript(PROBE_JS, move |result| match result {
+                    Ok(value) => eprintln!("[probe] tab={tab} {value:?}"),
+                    Err(error) => eprintln!("[probe] tab={tab} error {error:?}"),
+                });
+            }
+        }
+        let dirty: Vec<WebViewId> = self
+            .active
+            .and_then(|id| self.views.get(&id))
+            .filter(|v| !v.uploading)
+            .filter(|v| self.shared.dirty.borrow_mut().remove(&v.webview.id()))
+            .map(|v| v.webview.id())
+            .into_iter()
+            .collect();
         let mut frames = Vec::new();
         for id in dirty {
             let Some(&tab) = self.by_id.get(&id) else { continue };
@@ -234,9 +326,14 @@ impl Engine {
             if let Some(img) = v.ctx.read_to_image(rect) {
                 if trace() {
                     let (w, h) = (img.width(), img.height());
-                    eprintln!("[trace] read tab={tab} {w}x{h} mid={:?} corner={:?}", img.get_pixel(w / 2, h / 2).0, img.get_pixel(2, 2).0);
+                    eprintln!(
+                        "[trace] read tab={tab} {w}x{h} mid={:?} corner={:?}",
+                        img.get_pixel(w / 2, h / 2).0,
+                        img.get_pixel(0, 0).0
+                    );
                 }
-                frames.push((tab, image::Handle::from_rgba(img.width(), img.height(), img.into_raw())));
+                v.uploading = true;
+                frames.push((tab, id, image::Handle::from_rgba(img.width(), img.height(), img.into_raw())));
             }
         }
         let ups = std::mem::take(&mut *self.shared.updates.borrow_mut());
@@ -259,20 +356,25 @@ impl Engine {
             Button::Middle => MouseButton::Auxiliary,
         };
         let action = if down { MouseButtonAction::Down } else { MouseButtonAction::Up };
-        v.webview
-            .notify_input_event(InputEvent::MouseButton(MouseButtonEvent::new(action, button, DevicePoint::new(x, y).into())));
+        v.webview.notify_input_event(InputEvent::MouseButton(MouseButtonEvent::new(
+            action,
+            button,
+            DevicePoint::new(x, y).into(),
+        )));
     }
     pub fn wheel(&self, tab: usize, delta: mouse::ScrollDelta, x: f32, y: f32) {
         let Some(v) = self.views.get(&tab) else { return };
         // same constants servoshell uses
         let (dx, dy, mode) = match delta {
-            mouse::ScrollDelta::Lines { x, y } => ((x * 76.0) as f64, (y * 76.0) as f64, WheelMode::DeltaLine),
-            mouse::ScrollDelta::Pixels { x, y } => ((x * self.scale) as f64, (y * self.scale) as f64, WheelMode::DeltaPixel),
+            mouse::ScrollDelta::Lines { x, y } => ((x * 76.0) as f64, (y * 76.0) as f64, WheelMode::DeltaPixel),
+            mouse::ScrollDelta::Pixels { x, y } => {
+                ((x * self.scale) as f64, (y * self.scale) as f64, WheelMode::DeltaPixel)
+            }
         };
         let delta = WheelDelta { x: dx, y: dy, z: 0.0, mode };
         v.webview.notify_input_event(InputEvent::Wheel(WheelEvent::new(delta, DevicePoint::new(x, y).into())));
     }
-    pub fn key(&self, tab: usize, down: bool, key: &keyboard::Key, mods: keyboard::Modifiers) {
+    pub fn key(&self, tab: usize, down: bool, repeat: bool, key: &keyboard::Key, mods: keyboard::Modifiers) {
         let Some(v) = self.views.get(&tab) else { return };
         let state = if down { KeyState::Down } else { KeyState::Up };
         let ev = KeyboardEvent::new_without_event(
@@ -281,17 +383,26 @@ impl Engine {
             Code::Unidentified,
             Location::Standard,
             to_kt_mods(mods),
-            false,
+            repeat,
             false,
         );
         v.webview.notify_input_event(InputEvent::Keyboard(ev));
     }
 }
 
+/// Clear before spinning, so a wake arriving during the spin queues another turn.
+pub fn acknowledge_wake() {
+    WAKE_PENDING.store(false, Ordering::Release);
+}
+
 /// `BRO_TRACE=1` prints frame plumbing to stderr.
 fn trace() -> bool {
     static ON: OnceLock<bool> = OnceLock::new();
     *ON.get_or_init(|| std::env::var_os("BRO_TRACE").is_some())
+}
+
+fn video_smoke() -> bool {
+    cfg!(debug_assertions) && std::env::var_os("BRO_VIDEO_SMOKE").is_some()
 }
 
 fn clamp(s: PhysicalSize<u32>) -> PhysicalSize<u32> {

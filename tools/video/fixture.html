@@ -1,0 +1,78 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>bro video regression</title>
+<style>body{background:#171717;color:#eee;font:16px sans-serif}video{width:480px;display:block}pre{white-space:pre-wrap}</style>
+<h1>Video regression</h1><pre id="output"></pre>
+<script>
+const log = message => { document.querySelector('#output').textContent += message + '\n'; console.log(message); };
+const assert = (ok, label) => { if (!ok) throw new Error(label); };
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+const until = async (predicate, label, timeout = 15000) => {
+  const deadline = Date.now() + timeout;
+  while (!predicate()) {
+    if (Date.now() > deadline) throw new Error('timeout: ' + label);
+    await wait(50);
+  }
+};
+const event = (target, name) => new Promise((resolve, reject) => {
+  const timer = setTimeout(() => { cleanup(); reject(new Error('timeout: ' + name)); }, 15000);
+  const cleanup = () => { clearTimeout(timer); target.removeEventListener(name, done); target.removeEventListener('error', fail); };
+  const done = () => { cleanup(); resolve(); };
+  const fail = () => { cleanup(); reject(new Error('media error awaiting ' + name)); };
+  target.addEventListener(name, done, {once:true}); target.addEventListener('error', fail, {once:true});
+});
+const append = async (buffer, bytes) => { const done = event(buffer, 'updateend'); buffer.appendBuffer(bytes); await done; };
+async function controls(v) {
+  log("stage controls");
+  const probe = setInterval(() => log('state '+JSON.stringify({t:v.currentTime,d:v.duration,rs:v.readyState,paused:v.paused,seeking:v.seeking,ended:v.ended,error:v.error&&v.error.code})),2000);
+  v.muted = true;
+  await until(() => v.readyState >= 2, 'metadata');
+  log("stage play"); await v.play();
+  await until(() => v.currentTime > 3, 'play past initial queue');
+  v.pause(); await wait(250); const paused = v.currentTime;
+  await wait(350); assert(Math.abs(paused - v.currentTime) < .15, 'pause');
+  log("stage seek"); v.currentTime = 1;
+  await until(() => !v.seeking && Math.abs(v.currentTime - 1) < .4, 'backward seek');
+  log("stage rate"); v.playbackRate = 2;
+  await v.play(); await until(() => v.currentTime > 5, 'rate and replay');
+  log("stage end"); v.currentTime = 10;
+  await until(() => v.ended, 'end of stream');
+  clearInterval(probe);
+  assert(!v.error && v.videoWidth === 160, 'decoded frame');
+}
+(async () => {
+  for (const [name, tracks] of [
+    ['mp4', [['video/mp4; codecs="avc1.42c00b, mp4a.40.2"', 'av.mp4']]],
+    ['separate', [['video/mp4; codecs="avc1.42c00b"', 'video.mp4'], ['audio/mp4; codecs="mp4a.40.2"', 'audio.mp4']]],
+    ['webm', [['video/webm; codecs="vp9, opus"', 'av.webm']]],
+  ].filter(([name]) => !new URLSearchParams(location.search).has("case") || new URLSearchParams(location.search).get("case") === name)) {
+    log("stage case " + name);
+    const v = document.createElement('video'); v.controls = true; document.body.append(v);
+    const ms = new MediaSource(); const opened = event(ms, 'sourceopen');
+    const objectURL = URL.createObjectURL(ms); v.src = objectURL; await opened; URL.revokeObjectURL(objectURL);
+    const buffers = tracks.map(([mime]) => { assert(MediaSource.isTypeSupported(mime), 'codec ' + mime); return ms.addSourceBuffer(mime); });
+    for (let i = 0; i < tracks.length; i++) {
+      const bytes = new Uint8Array(await (await fetch(tracks[i][1])).arrayBuffer());
+      // Tiny initial partial header then several chunks exercise incremental parsing.
+      log(name + " track " + i + " header"); await append(buffers[i], bytes.slice(0, 5));
+      for (let at = 5; at < bytes.length; at += 32768) { log(name+" track "+i+" append "+at); await append(buffers[i], bytes.slice(at, at + 32768)); }
+      assert(buffers[i].buffered.length > 0, name + ' native ranges');
+      if (i + 1 < tracks.length) assert(v.buffered.length === 0, 'empty active track must empty intersection');
+    }
+    log("stage EOS"); ms.duration = 12;
+    const finished = event(ms, 'sourceended'); ms.endOfStream(); await finished;
+    await controls(v);
+    // Removal must affect the backend, not just JavaScript bookkeeping.
+    const done = event(buffers[0], 'updateend'); buffers[0].remove(0, 4); await done;
+    assert(ms.readyState === 'open', 'remove reopens ended source');
+    assert(!buffers[0].buffered.length || buffers[0].buffered.start(0) >= 3.9, 'removed frames');
+    ms.removeSourceBuffer(buffers[0]);
+    let detached = false; try { buffers[0].appendBuffer(new Uint8Array()); } catch(e) { detached = e.name === 'InvalidStateError'; }
+    assert(detached, 'removed buffer rejects append');
+    v.removeAttribute('src'); v.load(); v.remove();
+    log('BRO_FIXTURE_CASE_PASS ' + name);
+  }
+  const v = document.createElement('video'); document.body.append(v); v.src = 'av.mp4'; await controls(v); v.remove();
+  log('BRO_FIXTURE_PASS');
+})().catch(e => log('BRO_FIXTURE_FAIL ' + e.message));
+</script>

@@ -7,8 +7,9 @@ edition = "2024"
 iced = { version = "0.14", features = ["wgpu", "svg", "image", "advanced"] }
 png = "0.17" # already in the tree via iced; decodes the window icon
 # engine — our Servo fork, vendored in ./servo (branch `bro`, forked from upstream c6b9877a)
-servo = { path = "servo/components/servo", default-features = false, features = ["bundled", "clipboard", "js_jit", "webgl", "webcrypto"] }
+servo = { path = "servo/components/servo", default-features = false, features = ["bundled", "clipboard", "js_jit", "webgl", "webcrypto", "media-gstreamer"] }
 rustls = "0.23" # servo needs a crypto provider installed at startup
+env_logger = "0.11" # installed before Servo boots so its init-time logs survive
 url = "2"
 euclid = "0.22"
 dpi = "0.1"
@@ -34,3 +35,6 @@ opt-level = 1
 
 [profile.dev.package."*"]
 opt-level = 3
+
+[patch.crates-io]
+gstreamer-mse-sys = { path = "servo/components/media/backends/gstreamer/mse-sys" }

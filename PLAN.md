@@ -2,6 +2,8 @@
 
 Goal: browser that feels like Helium, runs faster than anything else. Shell first, engine second.
 
+Current optimization results, new session features, validation, and known limitations: see [PERFORMANCE.md](PERFORMANCE.md).
+
 ## Reality check (one line)
 A from-scratch engine (HTML/CSS/JS/JIT) that beats Blink+V8 on Speedometer/JetStream is a multi-year,
 multi-person job. Only full-Rust engine that exists today is Servo. Plan embeds Servo for phase 2,
